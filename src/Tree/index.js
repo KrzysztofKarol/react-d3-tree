@@ -5,11 +5,13 @@ import { layout, select, behavior, event } from 'd3';
 import clone from 'clone';
 import deepEqual from 'deep-equal';
 import uuid from 'uuid';
+import withStyles from 'isomorphic-style-loader/lib/withStyles';
 
 import Node from '../Node';
 import Link from '../Link';
-import './style.css';
+import s from './style.css';
 
+@withStyles(s)
 export default class Tree extends React.Component {
   constructor(props) {
     super(props);

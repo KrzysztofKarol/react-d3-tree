@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import uuid from 'uuid';
+import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import { select } from 'd3';
 
-import './style.css';
+import s from './style.css';
 
+@withStyles(s)
 export default class Node extends React.Component {
   constructor(props) {
     super(props);

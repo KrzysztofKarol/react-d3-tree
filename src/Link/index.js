@@ -1,9 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { svg, select } from 'd3';
+import withStyles from 'isomorphic-style-loader/lib/withStyles';
 
-import './style.css';
+import s from './style.css';
 
+@withStyles(s)
 export default class Link extends React.PureComponent {
   constructor(props) {
     super(props);

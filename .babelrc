@@ -4,5 +4,8 @@
     "react",
     "stage-0"
   ],
-  "plugins": ["babel-plugin-add-module-exports"]
+  "plugins": [
+    "babel-plugin-add-module-exports",
+    "transform-decorators-legacy"
+  ]
 }

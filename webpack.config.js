@@ -32,7 +32,6 @@ const config = {
     'clone',
     'd3',
     'react',
-    'react-transition-group',
     'prop-types',
     'uuid',
     'deep-equal',
@@ -51,13 +50,23 @@ const config = {
       },
       {
         test: /\.css$/,
-        // include: /node_modules/,
-        loaders: ['style-loader', 'css-loader'],
+        use: [
+          'isomorphic-style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+            },
+          },
+        ],
       },
     ],
   },
   resolve: {
-    modules: [path.resolve('./src')],
+    modules: [
+      'node_modules',
+      path.resolve('./src'),
+    ],
     extensions: ['.json', '.js', '.css'],
   },
   plugins,
