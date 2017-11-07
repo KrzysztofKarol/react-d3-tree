@@ -66,7 +66,7 @@ defaultValue: `'horizontal'`
 
 ### `pathFunc`
 
-type: `enum('diagonal'|'elbow'|'straight')`
+type: `union(enum|func)`
 defaultValue: `'diagonal'`
 
 
@@ -95,6 +95,7 @@ defaultValue: `{
   textAnchor: 'start',
   x: 10,
   y: -10,
+  transform: undefined,
 }`
 
 

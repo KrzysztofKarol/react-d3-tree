@@ -10,12 +10,12 @@ import s from './style.css';
 export default class Node extends React.Component {
   constructor(props) {
     super(props);
-    const { parent } = props.nodeData;
+    const { nodeData: { parent }, orientation } = props;
     const originX = parent ? parent.x : 0;
     const originY = parent ? parent.y : 0;
 
     this.state = {
-      transform: this.setTransformOrientation(originX, originY),
+      transform: this.setTransformOrientation(originX, originY, orientation),
       initialStyle: {
         opacity: 0,
       },
@@ -25,35 +25,52 @@ export default class Node extends React.Component {
   }
 
   componentDidMount() {
-    const { x, y } = this.props.nodeData;
-    const transform = this.setTransformOrientation(x, y);
+    const { nodeData: { x, y }, orientation, transitionDuration } = this.props;
+    const transform = this.setTransformOrientation(x, y, orientation);
 
-    this.applyTransform(transform);
+    this.applyTransform(transform, transitionDuration);
   }
 
   componentWillUpdate(nextProps) {
     const transform = this.setTransformOrientation(
       nextProps.nodeData.x,
       nextProps.nodeData.y,
+      nextProps.orientation,
     );
-    this.applyTransform(transform);
+    this.applyTransform(transform, nextProps.transitionDuration);
   }
 
-  setTransformOrientation(x, y) {
-    return this.props.orientation === 'horizontal'
-      ? `translate(${y},${x})`
-      : `translate(${x},${y})`;
+  shouldComponentUpdate(nextProps) {
+    return this.shouldNodeTransform(this.props, nextProps);
   }
 
-  applyTransform(transform, opacity = 1, done = () => {}) {
-    const { transitionDuration } = this.props;
+  shouldNodeTransform(ownProps, nextProps) {
+    return (
+      nextProps.subscriptions !== ownProps.subscriptions ||
+      nextProps.nodeData.x !== ownProps.nodeData.x ||
+      nextProps.nodeData.y !== ownProps.nodeData.y ||
+      nextProps.orientation !== ownProps.orientation
+    );
+  }
 
-    select(this.node)
-      .transition()
-      .duration(transitionDuration)
-      .attr('transform', transform)
-      .style('opacity', opacity)
-      .each('end', done);
+  setTransformOrientation(x, y, orientation) {
+    return orientation === 'horizontal' ? `translate(${y},${x})` : `translate(${x},${y})`;
+  }
+
+  applyTransform(transform, transitionDuration, opacity = 1, done = () => {}) {
+    if (transitionDuration === 0) {
+      select(this.node)
+        .attr('transform', transform)
+        .style('opacity', opacity);
+      done();
+    } else {
+      select(this.node)
+        .transition()
+        .duration(transitionDuration)
+        .attr('transform', transform)
+        .style('opacity', opacity)
+        .each('end', done);
+    }
   }
 
   handleClick() {
@@ -61,19 +78,17 @@ export default class Node extends React.Component {
   }
 
   componentWillLeave(done) {
-    const { parent } = this.props.nodeData;
+    const { nodeData: { parent }, orientation, transitionDuration } = this.props;
     const originX = parent ? parent.x : 0;
     const originY = parent ? parent.y : 0;
-    const transform = this.setTransformOrientation(originX, originY);
+    const transform = this.setTransformOrientation(originX, originY, orientation);
 
-    this.applyTransform(transform, 0, done);
+    this.applyTransform(transform, transitionDuration, 0, done);
   }
 
   render() {
     const { nodeData, nodeSvgShape, textLayout, styles } = this.props;
-    const nodeStyle = nodeData._children
-      ? { ...styles.node }
-      : { ...styles.leafNode };
+    const nodeStyle = nodeData._children ? { ...styles.node } : { ...styles.leafNode };
     return (
       <g
         id={nodeData.id}
@@ -101,6 +116,7 @@ export default class Node extends React.Component {
           textAnchor={textLayout.textAnchor}
           x={textLayout.x}
           y={textLayout.y}
+          transform={textLayout.transform}
           dy=".35em"
         >
           {this.props.name}
@@ -109,6 +125,7 @@ export default class Node extends React.Component {
           className="nodeAttributesBase"
           y={textLayout.y + 10}
           textAnchor={textLayout.textAnchor}
+          transform={textLayout.transform}
           style={nodeStyle.attributes}
         >
           {this.props.attributes &&
@@ -150,6 +167,7 @@ Node.propTypes = {
   name: PropTypes.string.isRequired,
   attributes: PropTypes.object,
   textLayout: PropTypes.object.isRequired,
+  subscriptions: PropTypes.object.isRequired, // eslint-disable-line react/no-unused-prop-types
   circleRadius: PropTypes.number,
   styles: PropTypes.object,
 };

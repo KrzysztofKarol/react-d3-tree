@@ -17,29 +17,30 @@ export default class Link extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.applyOpacity(1);
+    this.applyOpacity(1, this.props.transitionDuration);
   }
 
   componentWillLeave(done) {
-    this.applyOpacity(0, done);
+    this.applyOpacity(0, this.props.transitionDuration, done);
   }
 
-  applyOpacity(opacity, done = () => {}) {
-    const { transitionDuration } = this.props;
-
-    select(this.link)
-      .transition()
-      .duration(transitionDuration)
-      .style('opacity', opacity)
-      .each('end', done);
+  applyOpacity(opacity, transitionDuration, done = () => {}) {
+    if (transitionDuration === 0) {
+      select(this.link).style('opacity', opacity);
+      done();
+    } else {
+      select(this.link)
+        .transition()
+        .duration(transitionDuration)
+        .style('opacity', opacity)
+        .each('end', done);
+    }
   }
 
   diagonalPath(linkData, orientation) {
     const diagonal = svg
       .diagonal()
-      .projection(
-        d => (orientation === 'horizontal' ? [d.y, d.x] : [d.x, d.y]),
-      );
+      .projection(d => (orientation === 'horizontal' ? [d.y, d.x] : [d.x, d.y]));
     return diagonal(linkData);
   }
 
@@ -74,6 +75,10 @@ export default class Link extends React.PureComponent {
   drawPath() {
     const { linkData, orientation, pathFunc } = this.props;
 
+    if (typeof pathFunc === 'function') {
+      return pathFunc(linkData, orientation);
+    }
+
     if (pathFunc === 'elbow') {
       return this.elbowPath(linkData, orientation);
     }
@@ -107,7 +112,10 @@ Link.defaultProps = {
 Link.propTypes = {
   linkData: PropTypes.object.isRequired,
   orientation: PropTypes.oneOf(['horizontal', 'vertical']).isRequired,
-  pathFunc: PropTypes.oneOf(['diagonal', 'elbow', 'straight']).isRequired,
+  pathFunc: PropTypes.oneOfType([
+    PropTypes.oneOf(['diagonal', 'elbow', 'straight']),
+    PropTypes.func,
+  ]).isRequired,
   transitionDuration: PropTypes.number.isRequired,
   styles: PropTypes.object,
 };

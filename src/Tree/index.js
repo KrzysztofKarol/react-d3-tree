@@ -80,10 +80,7 @@ export default class Tree extends React.Component {
           .zoom()
           .scaleExtent([scaleExtent.min, scaleExtent.max])
           .on('zoom', () => {
-            g.attr(
-              'transform',
-              `translate(${event.translate}) scale(${event.scale})`,
-            );
+            g.attr('transform', `translate(${event.translate}) scale(${event.scale})`);
           })
           // Offset so that first pan and zoom does not jump back to [0,0] coords
           .translate([translate.x, translate.y]),
@@ -187,9 +184,7 @@ export default class Tree extends React.Component {
     const targetNode = matches[0];
 
     if (this.props.collapsible) {
-      targetNode._collapsed
-        ? this.expandNode(targetNode)
-        : this.collapseNode(targetNode);
+      targetNode._collapsed ? this.expandNode(targetNode) : this.collapseNode(targetNode);
       this.setState({ data }, () => this.handleOnClickCb(targetNode));
     } else {
       this.handleOnClickCb(targetNode);
@@ -219,26 +214,13 @@ export default class Tree extends React.Component {
    * @return {object} Object containing `nodes` and `links`.
    */
   generateTree() {
-    const {
-      initialDepth,
-      depthFactor,
-      separation,
-      nodeSize,
-      orientation,
-    } = this.props;
+    const { initialDepth, depthFactor, separation, nodeSize, orientation } = this.props;
 
     const tree = layout
       .tree()
-      .nodeSize(
-        orientation === 'horizontal'
-          ? [nodeSize.y, nodeSize.x]
-          : [nodeSize.x, nodeSize.y],
-      )
+      .nodeSize(orientation === 'horizontal' ? [nodeSize.y, nodeSize.x] : [nodeSize.x, nodeSize.y])
       .separation(
-        (a, b) =>
-          deepEqual(a.parent, b.parent)
-            ? separation.siblings
-            : separation.nonSiblings,
+        (a, b) => (deepEqual(a.parent, b.parent) ? separation.siblings : separation.nonSiblings),
       )
       .children(d => (d._collapsed ? null : d._children));
 
@@ -270,16 +252,18 @@ export default class Tree extends React.Component {
       transitionDuration,
       zoomable,
       textLayout,
+      nodeSize,
+      depthFactor,
+      initialDepth,
+      separation,
       circleRadius,
       styles,
     } = this.props;
 
+    const subscriptions = { ...nodeSize, ...separation, depthFactor, initialDepth };
+
     return (
-      <div
-        className={`rd3t-tree-container ${zoomable
-          ? 'rd3t-grabbable'
-          : undefined}`}
-      >
+      <div className={`rd3t-tree-container ${zoomable ? 'rd3t-grabbable' : undefined}`}>
         <svg className="rd3t-svg" width="100%" height="100%">
           <TransitionGroup
             component="g"
@@ -309,6 +293,7 @@ export default class Tree extends React.Component {
                 onClick={this.handleNodeToggle}
                 textLayout={textLayout}
                 circleRadius={circleRadius}
+                subscriptions={subscriptions}
                 styles={styles.nodes}
               />
             ))}
@@ -342,6 +327,7 @@ Tree.defaultProps = {
     textAnchor: 'start',
     x: 10,
     y: -10,
+    transform: undefined,
   },
   circleRadius: undefined, // TODO: DEPRECATE
   styles: {},
@@ -359,7 +345,10 @@ Tree.propTypes = {
     x: PropTypes.number,
     y: PropTypes.number,
   }),
-  pathFunc: PropTypes.oneOf(['diagonal', 'elbow', 'straight']),
+  pathFunc: PropTypes.oneOfType([
+    PropTypes.oneOf(['diagonal', 'elbow', 'straight']),
+    PropTypes.func,
+  ]),
   transitionDuration: PropTypes.number,
   depthFactor: PropTypes.number,
   collapsible: PropTypes.bool,
