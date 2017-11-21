@@ -22,6 +22,8 @@ export default class Node extends React.Component {
     };
 
     this.handleClick = this.handleClick.bind(this);
+    this.handleOnMouseOver = this.handleOnMouseOver.bind(this);
+    this.handleOnMouseOut = this.handleOnMouseOut.bind(this);
   }
 
   componentDidMount() {
@@ -77,6 +79,14 @@ export default class Node extends React.Component {
     this.props.onClick(this.props.nodeData.id);
   }
 
+  handleOnMouseOver() {
+    this.props.onMouseOver(this.props.nodeData.id);
+  }
+
+  handleOnMouseOut() {
+    this.props.onMouseOut(this.props.nodeData.id);
+  }
+
   componentWillLeave(done) {
     const { nodeData: { parent }, orientation, transitionDuration } = this.props;
     const originX = parent ? parent.x : 0;
@@ -99,6 +109,8 @@ export default class Node extends React.Component {
         className={nodeData._children ? 'nodeBase' : 'leafNodeBase'}
         transform={this.state.transform}
         onClick={this.handleClick}
+        onMouseOver={this.handleOnMouseOver}
+        onMouseOut={this.handleOnMouseOut}
       >
         {/* TODO: DEPRECATE <circle /> */}
         {this.props.circleRadius ? (
@@ -144,6 +156,7 @@ Node.defaultProps = {
   textAnchor: 'start',
   attributes: undefined,
   circleRadius: undefined,
+  onMouseOver: undefined,
   styles: {
     node: {
       circle: {},
@@ -164,6 +177,8 @@ Node.propTypes = {
   orientation: PropTypes.oneOf(['horizontal', 'vertical']).isRequired,
   transitionDuration: PropTypes.number.isRequired,
   onClick: PropTypes.func.isRequired,
+  onMouseOver: PropTypes.func.isRequired,
+  onMouseOut: PropTypes.func.isRequired,
   name: PropTypes.string.isRequired,
   attributes: PropTypes.object,
   textLayout: PropTypes.object.isRequired,
